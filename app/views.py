@@ -9,3 +9,5 @@ def index():
     '''
     title = 'Home - Blog'
     return render_template('index.html', title=title)
+
+
