@@ -1,14 +1,13 @@
-from app import app
 import urllib.request, json
-from .models import quote
+from .models import Quote
 
-Quote = quote.Quote
-quote_url = app.config['QUOTES_API_URL']
 
 def get_quote():
     '''
     Function that gets the json response to our url request and returns a random quote
     '''
+    quote_url = 'http://quotes.stormconsultancy.co.uk/random.json'
+
     with urllib.request.urlopen(quote_url) as url:
         get_quote_data = url.read()
         get_quote_response = json.loads(get_quote_data)

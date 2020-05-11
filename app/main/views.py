@@ -1,9 +1,11 @@
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, abort
 from ..request import get_quote
 from . import main
-from ..models import Quote
-from .forms import BlogForm
-from flask_login import login_required
+from ..models import User, Blog, Subscriber, Comment
+from .forms import BlogForm, CommentForm, UpdateProfile
+from flask_login import login_required, current_user
+from .. import db, photos
+from ..email import mail_message
 
 @main.route('/')
 def index():
@@ -13,7 +15,8 @@ def index():
     '''
     title = 'Jabulani - There\'s a story in everything'
     quote = get_quote()
-    return render_template('index.html', title=title, quote=quote)
+    blogs = Blog.query.all()
+    return render_template('index.html', title=title, quote=quote, blogs = blogs)
 
 @main.route('/user/<uname>')
 def profile(uname):
@@ -79,7 +82,7 @@ def new_blog(uname):
 
     if form.validate_on_submit():
         blog.title = form.title.data
-        blog.message = form.message.data
+        blog.message = form.post.data
         blog.user_id = current_user.id
 
 
@@ -88,11 +91,11 @@ def new_blog(uname):
 
         subscribers = Subscriber.query.all()
         for subscriber in subscribers:
-            mail_message("New Blog Post", "email/new_blog", subscriber.email, subscriber = subscriber)
+            mail_message("New Blog Post", "email/welcome_user", subscriber.email, user = subscriber)
 
         return redirect(url_for('.profile',uname=user.username))
 
-    return render_template('new_blog.html',uname=uname, user = user, BlogForm = form)
+    return render_template('new_blogpost.html',uname=uname, user = user, BlogForm = form)
 
 @main.route('/comments/<blog_id>')
 @login_required
